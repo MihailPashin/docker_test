@@ -1,0 +1,10 @@
+version: "3.7"
+
+services:
+   webserver:
+     build: .
+     ports:
+     - "8888:80"
+     volumes:
+     - ./src:/var/www/html
+     restart: always
