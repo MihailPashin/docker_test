@@ -1,10 +1,82 @@
-version: "3.7"
+version: "3.8"
+
+networks:
+  demo_sfr:
+    driver: bridge
 
 services:
-   webserver:
-     build: .
-     ports:
-     - "8888:80"
-     volumes:
-     - ./src:/var/www/html
-     restart: always
+  webserver:
+    build:
+      context: ./Service_Apache_Latest
+      args:
+        - PHP_CONTAINER=${LABEL}-php
+    image: ${LABEL}-webserver
+    container_name: ${LABEL}-webserver
+    environment:
+      - PHP_CONTAINER=${LABEL}-php
+    networks:
+      - demo_sfr
+    ports:
+      - ${HOST_PORT_WEBSERVER}:80
+      - ${HOST_PORT_WEBSERVER_SSL}:443
+    volumes:
+      - ./www:/var/www/html
+      - ./logs/webserver:/var/log/apache:rw${MOUNT_OPTIONS}
+    depends_on:
+      - php
+
+  php:
+    build:
+      context: ./Service_PHP_Latest
+    image: ${LABEL}-php
+    container_name: ${LABEL}-php
+    networks:
+      - demo_sfr
+    environment:
+      TZ: Europe/Moscow
+    volumes:
+      - ./www:/var/www/html
+
+  mysql:
+    image: mysql:${MYSQL_VERSION}
+    container_name: ${LABEL}-mysql
+    networks:
+      - demo_sfr
+    ports:
+      - ${HOST_PORT_MYSQL}:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_DEFAULT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DEFAULT_DB}
+      MYSQL_USER: test
+      MYSQL_PASSWORD: ${MYSQL_DEFAULT_PASSWORD}
+    command: ["--mysql-native-password=ON"]
+
+    volumes:
+      - .mysql_configs/custom.cnf:/etc/mysql/conf.d/local.cnf
+      - ./logs/mysql:/var/log/mysql:rw${MOUNT_OPTIONS}
+      - mysql-data:/var/lib/mysql
+
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: ${LABEL}-phpmyadmin
+    networks:
+      - demo_sfr
+    depends_on:
+      - php
+      - mysql
+    environment:
+      MYSQL_USERNAME: ${MYSQL_DEFAULT_USER}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_DEFAULT_PASSWORD}
+      PMA_HOST: mysql
+      PMA_PORT: ${HOST_PORT_MYSQL}
+    ports:
+      - ${HOST_PORT_PHPMYADMIN}:80
+
+volumes:
+  demet-data:
+    driver: "local"
+
+  mysql-data:
+    driver: "local" 
+
