@@ -39,6 +39,7 @@ services:
 
   mysql:
     image: mysql:${MYSQL_VERSION}
+    restart: always
     container_name: ${LABEL}-mysql
     networks:
       - demo_sfr
@@ -72,7 +73,7 @@ services:
       - ${HOST_PORT_PHPMYADMIN}:80
 
 volumes:
-  demet-data:
+  demo_sfr-data:
     driver: "local"
 
   mysql-data:
