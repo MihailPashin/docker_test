@@ -21,7 +21,7 @@ services:
       - ${HOST_PORT_WEBSERVER_SSL}:443
     volumes:
       - ./www:/var/www/html
-      - ./logs/webserver:/var/log/apache:rw${MOUNT_OPTIONS}
+      - ./logs/webserver:/var/log/apache
     depends_on:
       - php
 
@@ -49,11 +49,9 @@ services:
       MYSQL_DATABASE: ${MYSQL_DEFAULT_DB}
       MYSQL_USER: test
       MYSQL_PASSWORD: ${MYSQL_DEFAULT_PASSWORD}
-    command: ["--mysql-native-password=ON"]
-
     volumes:
-      - .mysql_configs/custom.cnf:/etc/mysql/conf.d/local.cnf
-      - ./logs/mysql:/var/log/mysql:rw${MOUNT_OPTIONS}
+      - ./mysql_configs/custom.cnf:/etc/mysql/conf.d/local.cnf
+      - ./logs/mysql:/var/log/mysql
       - mysql-data:/var/lib/mysql
 
 
